@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<h2>Thông tin cá nhân</h2>
+
+<form th:action="@{/profile}" th:object="${user}" method="post">
+
+    <input type="hidden" th:field="*{id}"/>
+
+    <input type="text" th:field="*{name}" placeholder="Tên">
+    <input type="text" th:field="*{phone}" placeholder="SĐT">
+    <input type="text" th:field="*{address}" placeholder="Địa chỉ">
+
+    <button type="submit">Cập nhật</button>
+</form>
+
+<a href="/home">Quay lại</a>
+
+</body>
+</html>
