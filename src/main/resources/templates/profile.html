@@ -1,21 +1,83 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Hồ sơ cá nhân - Khách hàng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary p-3">
+        <div class="container">
+            <a class="navbar-brand" href="/">Cinema</a>
+            <div class="ms-auto d-flex align-items-center text-white">
+                <span class="me-3">Xin chào, <b sec:authentication="name"></b>!</span>
+                <form th:action="@{/logout}" method="post">
+                    <button class="btn btn-sm btn-danger" type="submit">Đăng xuất</button>
+                </form>
+            </div>
+        </div>
+    </nav>
 
-<h2>Thông tin cá nhân</h2>
+    <div class="container mt-5">
+        <div class="row">
+            <!-- Cột Profile -->
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <img src="https://ui-avatars.com/api/?name=Customer&background=random" class="rounded-circle mb-3" width="100" />
+                        <h4>Tài khoản của tôi</h4>
+                        <p class="text-muted">Nhóm: Khách hàng thành viên</p>
+                        <hr>
+                        <div class="text-start">
+                            <p><strong>Email:</strong> khach1@gmail.com</p>
+                            <p><strong>Số DT:</strong> 0123456789</p>
+                        </div>
+                        <button class="btn btn-outline-primary w-100 mt-2">Cập nhật hồ sơ</button>
+                    </div>
+                </div>
+            </div>
 
-<form th:action="@{/profile}" th:object="${user}" method="post">
+            <!-- Cột Lịch sử đặt vé -->
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Lịch sử đặt vé (CORE-07)</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small">Danh sách các hóa đơn bạn đã đặt. Hệ thống cho phép hủy vé trước 24h (CORE-09).</p>
 
-    <input type="hidden" th:field="*{id}"/>
+                        <div th:if="${msgSuccess}" class="alert alert-success" th:text="${msgSuccess}"></div>
+                        <div th:if="${msgError}" class="alert alert-danger" th:text="${msgError}"></div>
 
-    <input type="text" th:field="*{name}" placeholder="Tên">
-    <input type="text" th:field="*{phone}" placeholder="SĐT">
-    <input type="text" th:field="*{address}" placeholder="Địa chỉ">
+                        <div class="list-group">
+                            <div th:each="b : ${bookings}" class="list-group-item list-group-item-action mb-2 border rounded">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1 text-primary" th:text="${'Phim: ' + (b.tickets.size() > 0 ? b.tickets[0].showtime.movie.title : 'N/A')}">Phim</h6>
+                                    <small th:class="${b.status != null and b.status.name() == 'CANCELLED' ? 'text-danger font-weight-bold' : 'text-success font-weight-bold'}" th:text="${b.status}">Trạng thái</small>
+                                </div>
+                                <p class="mb-1">
+                                    Suất chiếu: <b th:text="${b.tickets.size() > 0 ? #temporals.format(b.tickets[0].showtime.startTime, 'dd/MM/yyyy HH:mm') : 'N/A'}"></b>
+                                    <span th:text="${b.tickets.size() > 0 ? ' | ' + b.tickets[0].showtime.room.name : ''}"></span>
+                                </p>
+                                <small>Số lượng ghế: <span th:text="${b.tickets.size()}"></span> - Mã đơn: #<span th:text="${b.id}"></span> - Tổng tiền: <b th:text="${b.totalPrice} + 'đ'"></b></small>
 
-    <button type="submit">Cập nhật</button>
-</form>
+                                <div class="mt-2 text-end" th:if="${b.status == null or b.status.name() != 'CANCELLED'}">
+                                    <form th:action="@{/booking/cancel}" method="post">
+                                        <input type="hidden" name="bookingId" th:value="${b.id}" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng và hoàn lại ghế? Khôn thể khôi phục!')">Hủy vé (Hoàn Slot)</button>
+                                    </form>
+                                </div>
+                            </div>
 
-<a href="/home">Quay lại</a>
-
+                            <div th:if="${#lists.isEmpty(bookings)}" class="text-center p-3 text-muted">
+                                <em>Bạn chưa có lịch sử đặt vé nào.</em>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
+
